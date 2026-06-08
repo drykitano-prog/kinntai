@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>勤怠管理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #1D9E75;
+    --green-dark: #0F6E56;
+    --green-light: #E1F5EE;
+    --green-mid: #5DCAA5;
+    --bg: #F5F7F6;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.09);
+    --border-md: rgba(0,0,0,0.15);
+    --text: #1a1a1a;
+    --text-muted: #6b7280;
+    --text-hint: #9ca3af;
+    --red: #E24B4A;
+    --red-bg: #FEF2F2;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
+  }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+  }
+
+  /* Layout */
+  .container { max-width: 680px; margin: 0 auto; padding: 0 16px 80px; }
+
+  /* Header */
+  .app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    padding: 0 16px;
+  }
+  .header-inner {
+    max-width: 680px; margin: 0 auto;
+    display: flex; align-items: center; gap: 12px;
+    height: 56px;
+  }
+  .header-logo {
+    width: 32px; height: 32px; background: var(--green); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .header-logo i { color: #fff; font-size: 18px; }
+  .header-title { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  /* Setup banner */
+  .setup-banner {
+    background: #fffbeb; border: 1px solid #fde68a;
+    border-radius: var(--radius); padding: 14px 16px;
+    margin: 16px 0; font-size: 13px; color: #92400e;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .setup-banner i { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .setup-banner a { color: var(--green-dark); font-weight: 500; }
+  #gas-url-row { margin-top: 10px; display: flex; gap: 8px; }
+  #gas-url-row input { flex: 1; font-size: 13px; }
+  #gas-url-row button { white-space: nowrap; font-size: 13px; padding: 7px 14px; }
+  .connected-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--green-light); color: var(--green-dark);
+    border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 500;
+  }
+
+  /* Tabs */
+  .tabs-wrap { background: var(--surface); border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .tabs { max-width: 680px; margin: 0 auto; display: flex; padding: 0 16px; }
+  .tab {
+    flex: 1; padding: 14px 4px; text-align: center; cursor: pointer;
+    font-size: 13px; color: var(--text-muted); border: none; background: none;
+    border-bottom: 2px solid transparent; font-family: inherit; font-weight: 500;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .tab.active { color: var(--green); border-bottom-color: var(--green); }
+  .tab i { font-size: 16px; }
+
+  /* Card */
+  .card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 20px;
+    box-shadow: var(--shadow); margin-bottom: 12px;
+  }
+  .card-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .card-title i { color: var(--green); font-size: 18px; }
+
+  /* Form */
+  .field { margin-bottom: 16px; }
+  .field label { font-size: 12px; font-weight: 500; color: var(--text-muted); display: block; margin-bottom: 6px; letter-spacing: 0.3px; text-transform: uppercase; }
+  .field select, .field input[type="date"], .field input[type="text"] {
+    width: 100%; padding: 10px 12px;
+    border: 1px solid var(--border-md); border-radius: var(--radius-sm);
+    font-size: 15px; font-family: inherit; color: var(--text);
+    background: var(--surface); outline: none;
+    transition: border-color 0.15s;
+  }
+  .field select:focus, .field input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(29,158,117,0.12); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* Duration pill */
+  .duration-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--green-light); color: var(--green-dark);
+    border-radius: 20px; padding: 5px 12px; font-size: 13px; font-weight: 500;
+    margin-bottom: 16px; min-height: 28px;
+  }
+  .duration-pill.warn { background: #fef2f2; color: var(--red); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 11px 20px; border-radius: var(--radius-sm); font-size: 15px;
+    font-family: inherit; font-weight: 500; cursor: pointer; border: none;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--green); color: #fff; width: 100%; }
+  .btn-primary:hover { background: var(--green-dark); }
+  .btn-primary:disabled { background: #d1d5db; cursor: not-allowed; }
+  .btn-outline {
+    background: none; border: 1px solid var(--border-md); color: var(--text);
+    font-size: 13px; padding: 7px 14px;
+  }
+  .btn-outline:hover { background: var(--bg); }
+  .btn-ghost { background: none; border: none; color: var(--red); padding: 4px 6px; font-size: 13px; cursor: pointer; border-radius: 6px; }
+  .btn-ghost:hover { background: var(--red-bg); }
+  .btn-sm { padding: 7px 14px; font-size: 13px; }
+
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #1a1a1a; color: #fff; padding: 10px 18px;
+    border-radius: 24px; font-size: 14px; opacity: 0;
+    transition: all 0.25s; pointer-events: none; white-space: nowrap; z-index: 9999;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Loading */
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Table */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--text-muted); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 11px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+
+  /* Summary */
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .metric { background: var(--bg); border-radius: var(--radius-sm); padding: 14px; }
+  .metric-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .metric-value { font-size: 24px; font-weight: 700; color: var(--text); line-height: 1; }
+  .metric-unit { font-size: 13px; font-weight: 400; }
+  .metric-sub { font-size: 11px; color: var(--text-hint); margin-top: 4px; }
+
+  /* Person filter */
+  .person-filter { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 16px; }
+  .person-btn {
+    padding: 6px 14px; border: 1px solid var(--border-md); border-radius: 20px;
+    font-size: 13px; cursor: pointer; background: var(--surface); color: var(--text-muted);
+    font-family: inherit; transition: all 0.15s;
+  }
+  .person-btn.active { background: var(--green-light); border-color: var(--green); color: var(--green-dark); font-weight: 500; }
+
+  /* Member list */
+  .member-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 14px; background: var(--bg); border-radius: var(--radius-sm); margin-bottom: 8px;
+  }
+  .member-name { font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .member-name i { color: var(--text-muted); font-size: 16px; }
+  .add-row { display: flex; gap: 8px; }
+  .add-row input { flex: 1; }
+
+  /* Empty */
+  .empty { text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 14px; }
+  .empty i { font-size: 32px; display: block; margin-bottom: 8px; opacity: 0.4; }
+
+  /* Toolbar */
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+
+  /* Steps */
+  .steps { counter-reset: step; }
+  .step { display: flex; gap: 12px; margin-bottom: 14px; font-size: 13px; line-height: 1.6; }
+  .step::before { counter-increment: step; content: counter(step); min-width: 22px; height: 22px; background: var(--green); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  code { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: monospace; }
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-logo"><i class="ti ti-clock-record"></i></div>
+    <div>
+      <div class="header-title">勤怠管理</div>
+      <div class="header-sub">Google スプレッドシート連携</div>
+    </div>
+    <div style="margin-left:auto" id="conn-status"></div>
+  </div>
+</header>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('input')"><i class="ti ti-clock"></i>打刻</button>
+    <button class="tab" onclick="showTab('records')"><i class="ti ti-list"></i>記録</button>
+    <button class="tab" onclick="showTab('summary')"><i class="ti ti-chart-bar"></i>集計</button>
+    <button class="tab" onclick="showTab('members')"><i class="ti ti-users"></i>メンバー</button>
+    <button class="tab" onclick="showTab('setup')"><i class="ti ti-settings"></i>設定</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 打刻入力 -->
+  <div id="tab-input">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-clock-check"></i>打刻入力</div>
+      <div class="field">
+        <label>氏名</label>
+        <select id="name-select"><option value="">読み込み中...</option></select>
+      </div>
+      <div class="field">
+        <label>日付</label>
+        <input type="date" id="date-input">
+      </div>
+      <div class="row2">
+        <div class="field"><label>出勤時間</label><select id="time-in"></select></div>
+        <div class="field"><label>退勤時間</label><select id="time-out"></select></div>
+      </div>
+      <div id="duration-pill" class="duration-pill"><i class="ti ti-clock"></i><span>--</span></div>
+      <button class="btn btn-primary" id="submit-btn" onclick="submitRecord()">
+        <i class="ti ti-check"></i>打刻を記録する
+      </button>
+    </div>
+  </div>
+
+  <!-- 記録一覧 -->
+  <div id="tab-records" style="display:none">
+    <div class="card">
+      <div class="toolbar">
+        <div class="card-title" style="margin:0"><i class="ti ti-list"></i>打刻記録</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="loadRecords()"><i class="ti ti-refresh"></i>更新</button>
+          <button class="btn btn-outline btn-sm" onclick="exportCSV()"><i class="ti ti-download"></i>CSV</button>
+        </div>
+      </div>
+      <div id="records-container"><div class="empty"><i class="ti ti-inbox"></i>記録がありません</div></div>
+    </div>
+  </div>
+
+  <!-- 集計 -->
+  <div id="tab-summary" style="display:none">
+    <div class="card">
+      <div class="toolbar">
+        <div class="card-title" style="margin:0"><i class="ti ti-chart-bar"></i>人物別集計</div>
+        <button class="btn btn-outline btn-sm" onclick="exportSummaryCSV()"><i class="ti ti-download"></i>CSV</button>
+      </div>
+      <div class="person-filter" id="person-filter"></div>
+      <div id="summary-metrics"></div>
+      <div id="summary-detail"></div>
+    </div>
+  </div>
+
+  <!-- メンバー -->
+  <div id="tab-members" style="display:none">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-users"></i>メンバー管理</div>
+      <div id="member-list"></div>
+      <div class="add-row">
+        <input type="text" id="new-name" placeholder="名前を入力（例：山田 太郎）" onkeydown="if(event.key==='Enter')addMember()">
+        <button class="btn btn-outline" onclick="addMember()"><i class="ti ti-plus"></i>追加</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 設定 -->
+  <div id="tab-setup" style="display:none">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-brand-google"></i>Google Apps Script 連携設定</div>
+      <div id="setup-connected" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <span class="connected-badge"><i class="ti ti-check"></i>接続済み</span>
+          <span style="font-size:13px;color:var(--text-muted)" id="connected-url-display"></span>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="disconnectGAS()"><i class="ti ti-unlink"></i>接続解除</button>
+      </div>
+      <div id="setup-form">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.7">
+          Google Apps Script のウェブアプリURLを設定することで、スプレッドシートに自動記録されます。
+        </p>
+        <div class="steps">
+          <div class="step">Google スプレッドシートを新規作成する</div>
+          <div class="step">メニューから <strong>拡張機能 → Apps Script</strong> を開く</div>
+          <div class="step">ダウンロードした <code>gas_code.js</code> の中身を貼り付けて保存（Ctrl+S）</div>
+          <div class="step"><strong>デプロイ → 新しいデプロイ</strong> → 種類：ウェブアプリ<br>実行ユーザー：自分、アクセス：<strong>全員</strong> → デプロイ</div>
+          <div class="step">表示されたウェブアプリURLをコピーして下に貼り付ける</div>
+        </div>
+        <div class="field" style="margin-top:16px">
+          <label>ウェブアプリURL</label>
+          <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/...">
+        </div>
+        <button class="btn btn-primary" onclick="saveGASUrl()"><i class="ti ti-link"></i>接続する</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const GAS_URL_KEY = 'kintai_gas_url';
+let gasUrl = localStorage.getItem(GAS_URL_KEY) || '';
+let records = [];
+let members = [];
+let activePerson = null;
+
+// ── Utility ──────────────────────────────
+const pad = n => String(n).padStart(2,'0');
+const minsToStr = m => `${pad(Math.floor(m/60))}:${pad(m%60)}`;
+
+function toast(msg, dur=3000) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), dur);
+}
+
+function setLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  if (loading) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> 送信中...`;
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="ti ti-check"></i>打刻を記録する`;
+  }
+}
+
+// ── GAS API ──────────────────────────────
+async function gasCall(params) {
+  if (!gasUrl) { toast('⚠️ 設定タブでURLを設定してください'); return null; }
+  const url = gasUrl + '?' + new URLSearchParams(params);
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    return data;
+  } catch (e) {
+    toast('❌ 通信エラー: ' + e.message);
+    return null;
+  }
+}
+
+// ── Setup ────────────────────────────────
+function updateConnStatus() {
+  const el = document.getElementById('conn-status');
+  if (gasUrl) {
+    el.innerHTML = `<span class="connected-badge"><i class="ti ti-check"></i>接続済み</span>`;
+  } else {
+    el.innerHTML = `<span style="font-size:12px;color:var(--text-muted)">未接続</span>`;
+  }
+}
+
+function saveGASUrl() {
+  const val = document.getElementById('gas-url-input').value.trim();
+  if (!val.startsWith('https://')) { toast('⚠️ 正しいURLを入力してください'); return; }
+  gasUrl = val;
+  localStorage.setItem(GAS_URL_KEY, gasUrl);
+  updateConnStatus();
+  showSetupConnected();
+  toast('✅ 接続しました');
+  loadMembers();
+}
+
+function disconnectGAS() {
+  gasUrl = '';
+  localStorage.removeItem(GAS_URL_KEY);
+  updateConnStatus();
+  document.getElementById('setup-connected').style.display = 'none';
+  document.getElementById('setup-form').style.display = '';
+}
+
+function showSetupConnected() {
+  document.getElementById('setup-connected').style.display = '';
+  document.getElementById('setup-form').style.display = 'none';
+  document.getElementById('connected-url-display').textContent = gasUrl.substring(0, 60) + '...';
+}
+
+// ── Members ──────────────────────────────
+async function loadMembers() {
+  const data = await gasCall({ action: 'getMembers' });
+  if (!data || !data.success) return;
+  members = data.members || [];
+  refreshNameSelect();
+  renderMemberList();
+}
+
+function refreshNameSelect() {
+  const s = document.getElementById('name-select');
+  const cur = s.value;
+  s.innerHTML = '<option value="">選択してください</option>';
+  members.forEach(n => {
+    const o = document.createElement('option');
+    o.value = n; o.textContent = n;
+    if (n === cur) o.selected = true;
+    s.appendChild(o);
+  });
+}
+
+function renderMemberList() {
+  const el = document.getElementById('member-list');
+  if (!members.length) {
+    el.innerHTML = '<div class="empty"><i class="ti ti-user-off"></i>メンバーがいません</div>';
+    return;
+  }
+  el.innerHTML = members.map((n,i) => `
+    <div class="member-item">
+      <span class="member-name"><i class="ti ti-user"></i>${n}</span>
+      <button class="btn-ghost" onclick="removeMember('${n}')"><i class="ti ti-trash"></i></button>
+    </div>`).join('');
+}
+
+async function addMember() {
+  const input = document.getElementById('new-name');
+  const name = input.value.trim();
+  if (!name) { toast('⚠️ 名前を入力してください'); return; }
+  const data = await gasCall({ action: 'addMember', name });
+  if (!data) return;
+  if (!data.success) { toast('❌ ' + data.error); return; }
+  input.value = '';
+  toast(`✅「${name}」を追加しました`);
+  await loadMembers();
+}
+
+async function removeMember(name) {
+  if (!confirm(`「${name}」を削除しますか？`)) return;
+  const data = await gasCall({ action: 'removeMember', name });
+  if (!data) return;
+  if (!data.success) { toast('❌ ' + data.error); return; }
+  toast(`🗑「${name}」を削除しました`);
+  await loadMembers();
+}
+
+// ── Time ─────────────────────────────────
+function buildTimeOptions(sel, defHour) {
+  sel.innerHTML = '';
+  for (let h = 5; h <= 23; h++) for (let m = 0; m < 60; m += 10) {
+    const o = document.createElement('option');
+    o.value = h * 60 + m;
+    o.textContent = `${pad(h)}:${pad(m)}`;
+    if (h === defHour && m === 0) o.selected = true;
+    sel.appendChild(o);
+  }
+}
+
+function updateDuration() {
+  const inV = parseInt(document.getElementById('time-in').value);
+  const outV = parseInt(document.getElementById('time-out').value);
+  const diff = outV - inV;
+  const pill = document.getElementById('duration-pill');
+  if (diff > 0) {
+    const h = Math.floor(diff/60), m = diff%60;
+    pill.className = 'duration-pill';
+    pill.innerHTML = `<i class="ti ti-clock"></i><span>勤務時間：${h}時間${m ? m+'分' : ''}</span>`;
+  } else {
+    pill.className = 'duration-pill warn';
+    pill.innerHTML = `<i class="ti ti-alert-circle"></i><span>退勤時間を出勤より後に設定してください</span>`;
+  }
+}
+
+// ── Record ───────────────────────────────
+async function submitRecord() {
+  const name = document.getElementById('name-select').value;
+  const date = document.getElementById('date-input').value;
+  const inV = parseInt(document.getElementById('time-in').value);
+  const outV = parseInt(document.getElementById('time-out').value);
+  if (!name) { toast('⚠️ 氏名を選択してください'); return; }
+  if (!date) { toast('⚠️ 日付を選択してください'); return; }
+  if (outV <= inV) { toast('⚠️ 退勤時間を正しく設定してください'); return; }
+
+  setLoading('submit-btn', true);
+  const data = await gasCall({
+    action: 'addRecord', name, date,
+    timeIn: minsToStr(inV), timeOut: minsToStr(outV), workMins: outV - inV
+  });
+  setLoading('submit-btn', false);
+  if (!data) return;
+  if (!data.success) { toast('❌ ' + data.error); return; }
+  toast(`✅ ${name} の打刻を記録しました`);
+}
+
+// ── Records Tab ──────────────────────────
+async function loadRecords() {
+  const c = document.getElementById('records-container');
+  c.innerHTML = '<div class="empty"><i class="ti ti-loader"></i>読み込み中...</div>';
+  const data = await gasCall({ action: 'getRecords' });
+  if (!data || !data.success) { c.innerHTML = '<div class="empty"><i class="ti ti-alert-circle"></i>読み込みエラー</div>'; return; }
+  records = data.records || [];
+  records.sort((a,b) => a.date < b.date ? 1 : -1);
+  if (!records.length) { c.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i>記録がありません</div>'; return; }
+  c.innerHTML = `<div class="tbl-wrap"><table>
+    <thead><tr><th>日付</th><th>氏名</th><th>出勤</th><th>退勤</th><th>勤務時間</th></tr></thead>
+    <tbody>${records.map(r=>`<tr><td>${r.date}</td><td>${r.name}</td><td>${r.timeIn}</td><td>${r.timeOut}</td><td>${r.workStr}</td></tr>`).join('')}</tbody>
+  </table></div>`;
+  renderSummary();
+}
+
+// ── Summary ──────────────────────────────
+function renderSummary() {
+  const names = [...new Set(records.map(r => r.name))];
+  const pf = document.getElementById('person-filter');
+  pf.innerHTML = names.map(n => `<button class="person-btn${activePerson===n?' active':''}" onclick="selectPerson('${n}')">${n}</button>`).join('');
+  if (!activePerson && names.length) activePerson = names[0];
+  showPersonSummary(activePerson);
+}
+
+function selectPerson(name) { activePerson = name; renderSummary(); }
+
+function showPersonSummary(name) {
+  const sm = document.getElementById('summary-metrics');
+  const sd = document.getElementById('summary-detail');
+  if (!name) { sm.innerHTML = ''; sd.innerHTML = '<div class="empty">氏名を選択してください</div>'; return; }
+  const pr = records.filter(r => r.name === name);
+  if (!pr.length) { sm.innerHTML = ''; sd.innerHTML = '<div class="empty">記録がありません</div>'; return; }
+  const total = pr.reduce((s,r) => s + Number(r.workMins), 0);
+  const avg = Math.round(total / pr.length);
+  const th = Math.floor(total/60), tm = total%60, ah = Math.floor(avg/60), am = avg%60;
+  sm.innerHTML = `<div class="metrics">
+    <div class="metric"><div class="metric-label">出勤日数</div><div class="metric-value">${pr.length}<span class="metric-unit"> 日</span></div></div>
+    <div class="metric"><div class="metric-label">総勤務</div><div class="metric-value">${th}<span class="metric-unit">h</span>${tm?`${tm}<span class="metric-unit">m</span>`:''}</div></div>
+    <div class="metric"><div class="metric-label">平均/日</div><div class="metric-value">${ah}<span class="metric-unit">h</span>${am?`${am}<span class="metric-unit">m</span>`:''}</div></div>
+  </div>`;
+  sd.innerHTML = `<div class="tbl-wrap"><table>
+    <thead><tr><th>日付</th><th>出勤</th><th>退勤</th><th>勤務時間</th></tr></thead>
+    <tbody>${pr.map(r=>`<tr><td>${r.date}</td><td>${r.timeIn}</td><td>${r.timeOut}</td><td>${r.workStr}</td></tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ── Export ───────────────────────────────
+function exportCSV() {
+  if (!records.length) { toast('記録がありません'); return; }
+  let csv = '\uFEFF日付,氏名,出勤時間,退勤時間,勤務時間（分）,勤務時間\n';
+  records.forEach(r => { csv += `${r.date},${r.name},${r.timeIn},${r.timeOut},${r.workMins},${r.workStr}\n`; });
+  dlFile(csv, '勤怠記録.csv');
+}
+
+function exportSummaryCSV() {
+  const names = [...new Set(records.map(r => r.name))];
+  if (!names.length) { toast('記録がありません'); return; }
+  let csv = '\uFEFF氏名,出勤日数,総勤務時間（分）,総勤務時間,平均勤務時間（分）,平均勤務時間\n';
+  names.forEach(name => {
+    const pr = records.filter(r => r.name === name);
+    const total = pr.reduce((s,r) => s + Number(r.workMins), 0);
+    const avg = Math.round(total/pr.length);
+    const th = Math.floor(total/60), tm = total%60, ah = Math.floor(avg/60), am = avg%60;
+    csv += `${name},${pr.length},${total},${th}時間${tm?tm+'分':''},${avg},${ah}時間${am?am+'分':''}\n`;
+  });
+  dlFile(csv, '勤怠集計.csv');
+}
+
+function dlFile(content, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: 'text/csv' }));
+  a.download = filename; a.click();
+}
+
+// ── Tabs ─────────────────────────────────
+function showTab(tab) {
+  ['input','records','summary','members','setup'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', ['input','records','summary','members','setup'][i] === tab);
+  });
+  if (tab === 'records') loadRecords();
+  if (tab === 'summary' && !records.length) loadRecords();
+  if (tab === 'members') { loadMembers(); renderMemberList(); }
+  if (tab === 'setup') {
+    if (gasUrl) { showSetupConnected(); } 
+    else { document.getElementById('setup-connected').style.display='none'; document.getElementById('setup-form').style.display=''; }
+  }
+}
+
+// ── Init ─────────────────────────────────
+(function init() {
+  const today = new Date();
+  document.getElementById('date-input').value = today.toISOString().split('T')[0];
+  buildTimeOptions(document.getElementById('time-in'), 9);
+  buildTimeOptions(document.getElementById('time-out'), 18);
+  document.getElementById('time-in').addEventListener('change', updateDuration);
+  document.getElementById('time-out').addEventListener('change', updateDuration);
+  updateDuration();
+  updateConnStatus();
+  if (gasUrl) {
+    loadMembers();
+  } else {
+    document.getElementById('name-select').innerHTML = '<option value="">設定タブでURLを設定してください</option>';
+  }
+  if (gasUrl && document.getElementById('gas-url-input')) {
+    document.getElementById('gas-url-input').value = gasUrl;
+  }
+})();
+</script>
+</body>
+</html>
