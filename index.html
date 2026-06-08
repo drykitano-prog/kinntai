@@ -411,7 +411,7 @@ async function loadMembers() {
   if (!members.length) { el.innerHTML='<div class="empty" style="padding:1rem 0">メンバーがいません</div>'; return; }
   el.innerHTML=members.map(m=>`
     <div class="member-item">
-      <span class="member-name"><i class="ti ti-user"></i>${m.name} <span class="pin-badge">PIN: ${m.pin}</span></span>
+      <span class="member-name"><i class="ti ti-user"></i>${m.name}</span>
       <button class="btn-ghost" onclick="removeMember('${m.name}')"><i class="ti ti-trash"></i></button>
     </div>`).join('');
 }
@@ -501,7 +501,7 @@ async function setupAddMember() {
 function renderSetupList() {
   const el = document.getElementById('setup-member-list');
   if (!setupMembers.length) { el.innerHTML = '<p style="font-size:13px;color:#6b7280;text-align:center">まだ登録がありません</p>'; return; }
-  el.innerHTML = setupMembers.map(m => `<div style="display:flex;justify-content:space-between;padding:8px 10px;background:#f9fafb;border-radius:6px;margin-bottom:6px;font-size:13px"><span>${m.name}</span><span style="color:#6b7280;font-family:monospace">PIN: ${m.pin}</span></div>`).join('');
+  el.innerHTML = setupMembers.map(m => `<div style="display:flex;justify-content:space-between;padding:8px 10px;background:#f9fafb;border-radius:6px;margin-bottom:6px;font-size:13px"><span>${m.name}</span></div>`).join('');
 }
 
 // ── Init ─────────────────────────────────
