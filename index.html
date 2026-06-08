@@ -151,6 +151,25 @@
     <button class="btn-login" id="login-btn" onclick="doLogin()">
       <i class="ti ti-login"></i>ログイン
     </button>
+    <button onclick="showSetup()" style="margin-top:12px;background:none;border:none;color:#6b7280;font-size:13px;cursor:pointer;font-family:inherit">初回セットアップ（メンバー未登録の場合）</button>
+  </div>
+</div>
+
+<!-- 初回セットアップ画面 -->
+<div id="setup-screen" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px">
+  <div class="login-card">
+    <div class="login-logo" style="background:#6b7280"><i class="ti ti-settings"></i></div>
+    <div class="login-title" style="font-size:18px">初回セットアップ</div>
+    <div class="login-sub">メンバーを登録してください</div>
+    <div style="text-align:left;margin-bottom:16px">
+      <div class="add-row" style="display:grid;grid-template-columns:1fr 90px;gap:8px;margin-bottom:8px">
+        <input type="text" id="setup-name" placeholder="名前（例：山田 太郎）" style="padding:10px 12px;border:1px solid rgba(0,0,0,0.15);border-radius:8px;font-size:14px;font-family:inherit;outline:none">
+        <input type="number" id="setup-pin" placeholder="PIN" min="1000" max="9999" style="padding:10px 12px;border:1px solid rgba(0,0,0,0.15);border-radius:8px;font-size:14px;font-family:inherit;outline:none">
+      </div>
+      <button onclick="setupAddMember()" style="width:100%;padding:10px;background:#1D9E75;color:#fff;border:none;border-radius:8px;font-size:14px;font-family:inherit;font-weight:500;cursor:pointer"><i class="ti ti-plus"></i> 追加</button>
+    </div>
+    <div id="setup-member-list" style="text-align:left;margin-bottom:16px;max-height:200px;overflow-y:auto"></div>
+    <button onclick="hideSetup()" style="width:100%;padding:10px;background:none;border:1px solid rgba(0,0,0,0.15);border-radius:8px;font-size:14px;font-family:inherit;cursor:pointer">ログイン画面に戻る</button>
   </div>
 </div>
 
@@ -456,6 +475,42 @@ function showTab(tab) {
   if (tab==='records') loadRecords();
   if (tab==='summary' && !records.length) loadRecords();
   if (tab==='members') loadMembers();
+}
+
+// ── Setup Screen ─────────────────────────
+let setupMembers = [];
+
+function showSetup() {
+  document.getElementById('login-screen').style.display = 'none';
+  const s = document.getElementById('setup-screen');
+  s.style.display = 'flex';
+  renderSetupList();
+}
+
+function hideSetup() {
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+async function setupAddMember() {
+  const name = document.getElementById('setup-name').value.trim();
+  const pin = document.getElementById('setup-pin').value.trim();
+  if (!name) { alert('名前を入力してください'); return; }
+  if (!pin || pin.length !== 4) { alert('PINは4桁で入力してください'); return; }
+  const data = await gasCall({ action: 'addMember', name, pin });
+  if (!data) return;
+  if (!data.success) { alert(data.error); return; }
+  document.getElementById('setup-name').value = '';
+  document.getElementById('setup-pin').value = '';
+  setupMembers.push({ name, pin });
+  renderSetupList();
+  alert(`「${name}」を登録しました！`);
+}
+
+function renderSetupList() {
+  const el = document.getElementById('setup-member-list');
+  if (!setupMembers.length) { el.innerHTML = '<p style="font-size:13px;color:#6b7280;text-align:center">まだ登録がありません</p>'; return; }
+  el.innerHTML = setupMembers.map(m => `<div style="display:flex;justify-content:space-between;padding:8px 10px;background:#f9fafb;border-radius:6px;margin-bottom:6px;font-size:13px"><span>${m.name}</span><span style="color:#6b7280;font-family:monospace">PIN: ${m.pin}</span></div>`).join('');
 }
 
 // ── Init ─────────────────────────────────
