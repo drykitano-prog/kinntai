@@ -412,7 +412,7 @@ async function loadMembers() {
   el.innerHTML=members.map(m=>`
     <div class="member-item">
       <span class="member-name"><i class="ti ti-user"></i>${m.name}</span>
-      <button class="btn-ghost" onclick="removeMember('${m.name}')"><i class="ti ti-trash"></i></button>
+
     </div>`).join('');
 }
 
